@@ -63,7 +63,7 @@ namespace KMA.CSharp2020.Lab02
         }
         public int Age
         {
-            get { return _person == null ? 0 : _person.Age; }
+            get { return User == null ? 0 : User.Age; }
             set
             {
                 _age = value;
@@ -72,7 +72,7 @@ namespace KMA.CSharp2020.Lab02
         }
         public string WesternZodiac
         {
-            get { return _person == null ? "" : _person.SunSign; }
+            get { return User == null ? "" : User.SunSign; }
             set
             {
                 _westernZodiac = value;
@@ -81,7 +81,7 @@ namespace KMA.CSharp2020.Lab02
         }
         public string ChineseZodiac
         {
-            get { return _person == null ? "" : _person.ChineseSign; }
+            get { return User == null ? "" : User.ChineseSign; }
             set
             {
                 _chineseZodiac = value;
@@ -143,20 +143,21 @@ namespace KMA.CSharp2020.Lab02
                    !string.IsNullOrWhiteSpace(Email);
         }
 
-        private async void Calculate()
+        private void Calculate()
         {
-            if (_birthDate.Year < DateTime.Today.Year - 135 || _birthDate > DateTime.Today)
+            try
             {
-                MessageBox.Show("Wrong value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                _person = new Person(Name, Surname, Email, BirthDate);
+                WesternZodiac = User.SunSign;
+                ChineseZodiac = User.ChineseSign;
+                ManageOutput();
+                if (User.IsBirthday) MessageBox.Show("Happy Birthday!", "Congratulations!", MessageBoxButton.OK, MessageBoxImage.Question);
             }
-            if (_person == null) _person = new Person(Name, Surname, BirthDate);
-            else _person.BirthDate = _birthDate;
-            await Task.Run(() => ChineseZodiac = User.ChineseSign);
-            await Task.Run(() => WesternZodiac = User.SunSign);
-            Age = User.Age;
-            ManageOutput();
-            if (User.IsBirthday) MessageBox.Show("Happy Birthday!", "Congratulations!", MessageBoxButton.OK, MessageBoxImage.Question);
+            catch (ArgumentException e)
+            {
+                MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _person = null;
+            }
         }
         #endregion
     }

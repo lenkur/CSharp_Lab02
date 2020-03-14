@@ -1,4 +1,7 @@
-﻿using System;
+﻿using KMA.CSharp2020.Lab02.Exceptions;
+using System;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace KMA.CSharp2020.Lab02
 {
@@ -24,21 +27,26 @@ namespace KMA.CSharp2020.Lab02
         #endregion
 
         #region Properties
-        public string Name
+        private string Name
         {
             get { return _name; }
             set { _name = value; }
         }
 
-        public string Surname
+        private string Surname
         {
             get { return _surname; }
             set { _surname = value; }
         }
-        public string Email
+        private string Email
         {
             get { return _email; }
-            set { _email = value; }
+            set
+            {
+                if (!Regex.IsMatch(value, "[\\w-+']+@[\\w\\.]+\\.\\w{2,3}"))
+                    throw new ArgumentInvalidEmailException($"Email address '{value}' is invalid.");
+                _email = value;
+            }
         }
 
         public DateTime BirthDate
@@ -47,7 +55,11 @@ namespace KMA.CSharp2020.Lab02
             set
             {
                 _birthDate = value;
-                FillProperties();
+                if (_birthDate.Year < DateTime.Today.Year - 135)
+                    throw new ArgumentExpiredDateException($"{BirthDate.Date:D} is too old date.");
+                if (_birthDate > DateTime.Today)
+                    throw new ArgumentNonExistingDateException($"{BirthDate.Date:D} does not exist yet.");
+                else FillProperties();
             }
         }
 
@@ -83,17 +95,20 @@ namespace KMA.CSharp2020.Lab02
             Email = email;
         }
 
-        public Person(string name, string surname, string email, DateTime birthDate) : this(name, surname, email)
+        public Person(string name, string surname, string email, DateTime birthDate)
         {
+            Name = name;
+            Surname = surname;
+            Email = email;
             BirthDate = birthDate;
         }
         #endregion
 
 
-        private void FillProperties()
+        private async void FillProperties()
         {
             CalcWesternZodiac();
-            CalcChineseZodiac();
+            await Task.Run(() => CalcChineseZodiac());
         }
 
         private void CalcWesternZodiac()
